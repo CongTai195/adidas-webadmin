@@ -1,0 +1,26 @@
+.layoutContainer {
+  min-height: 100vh;
+  max-height: 100vh;
+}
+.header {
+  padding: 0px;
+  background-color: white;
+}
+.toggleMenuIcon {
+  font-size: 24px;
+  margin-left: 24px;
+}
+.content {
+  overflow: scroll;
+  min-height: calc(100vh - 64px);
+  max-height: calc(100vh - 64px);
+}
+.loadingContainer {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.loadingIcon {
+  font-size: 64px;
+}

@@ -1,0 +1,30 @@
+.container {
+  flex: 1;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.buttonSeparator {
+  margin-right: 4px;
+}
+
+.searchContainer {
+  width: 300px;
+  align-self: flex-end;
+}
+.addProductFAB {
+  /* position: absolute;
+  bottom: 24px;
+  right: 24px;
+  width: 52px;
+  height: 52px; */
+  margin-right: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cardExtra {
+  display: flex;
+}

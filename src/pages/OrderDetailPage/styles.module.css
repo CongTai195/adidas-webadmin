@@ -1,0 +1,26 @@
+.container {
+  flex: 1;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+}
+.input {
+  width: 450px;
+  margin: 12px 0px;
+}
+.inputAddonBefore {
+  width: 100px;
+}
+
+.submitButton {
+  width: 128px;
+  display: flex;
+  margin-top: 24px;
+  align-self: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.customerDetailCard {
+  margin-bottom: 24px;
+}
