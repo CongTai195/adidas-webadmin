@@ -1,7 +1,12 @@
 import React from 'react';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-import { Table, Button, Input, Modal } from 'antd';
+import {
+  Table,
+  Button,
+  Modal,
+  // Input,
+} from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 
 import styles from './styles.module.css';
@@ -43,9 +48,9 @@ const UserManagePage = () => {
     modalRef.current = modal;
   }, [dispatch]);
 
-  const onSearch = React.useCallback((text) => {
+  // const onSearch = React.useCallback((text) => {
 
-  }, []);
+  // }, []);
 
   const columns = [
     {
@@ -125,13 +130,13 @@ const UserManagePage = () => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.searchContainer}>
+      {/* <div className={styles.searchContainer}>
         <Input.Search
           enterButton
           placeholder="Tên người dùng"
           onSearch={onSearch}
         />
-      </div>
+      </div> */}
 
       <Table
         rowKey="id"

@@ -1,8 +1,9 @@
 import * as ActionTypes from '../actionTypes';
 
 const defaultState = {
-  transactionList: [],
   loading: true,
+  transactionList: [],
+  updateLoading: false,
   selectedTransaction: null,
 };
 
@@ -23,6 +24,37 @@ export default function ordersReducer(state = defaultState, action) {
       return {
         ...state,
         loading: false,
+      }
+    case ActionTypes.UPDATE_TRANSACTION:
+      return {
+        ...state,
+        updateLoading: true,
+      }
+    case ActionTypes.UPDATE_TRANSACTION_SUCCESS: {
+      const updateState = {
+        updateLoading: false,
+        selectedTransaction: {
+          ...state.selectedTransaction,
+          status: action.payload.status,
+        }
+      };
+
+      const itemIndex = state.transactionList.findIndex((x) => x.id === action.payload.id);
+
+      if (itemIndex > -1) {
+        updateState.transactionList = JSON.parse(JSON.stringify(state.transactionList));
+        updateState.transactionList[itemIndex].status = action.payload.status;
+      }
+
+      return {
+        ...state,
+        ...updateState
+      }
+    }
+    case ActionTypes.UPDATE_TRANSACTION_FAILED:
+      return {
+        ...state,
+        updateLoading: false,
       }
     case ActionTypes.SELECT_TRANSACTION:
       return {

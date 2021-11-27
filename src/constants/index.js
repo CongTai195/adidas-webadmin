@@ -2,12 +2,14 @@ import React from 'react';
 import axios from 'axios';
 import { Redirect } from 'react-router-dom';
 import { BiLogOut } from 'react-icons/bi';
-import { FaBox, FaUserCircle, FaDollarSign, FaShoppingCart } from 'react-icons/fa';
+import { FaBox, FaTags, FaUserCircle, FaDollarSign, FaShoppingCart } from 'react-icons/fa';
 
 import NotFound from '../pages/NotFound';
 import UserManagePage from '../pages/UserManagePage';
 import OrderManagePage from '../pages/OrderManagePage';
 import OrderDetailPage from '../pages/OrderDetailPage';
+import CategoryManagePage from '../pages/CategoryManagePage';
+// import AddCategoryPage from '../pages/AddCategoryPage';
 import ProductManagePage from '../pages/ProductManagePage';
 import AddProductPage from '../pages/AddProductPage';
 import ProductDetailPage from '../pages/ProductDetailPage';
@@ -34,6 +36,15 @@ export const routes = {
     path: '/orders/detail',
     component: OrderDetailPage
   },
+  CATEGORIES: {
+    path: '/categories',
+    exact: true,
+    component: CategoryManagePage
+  },
+  // ADD_CATEGORY: {
+  //   path: '/products/add',
+  //   component: AddProductPage
+  // },
   PRODUCTS: {
     path: '/products',
     exact: true,
@@ -64,7 +75,12 @@ export const sideMenuItems = [
     icon: <FaUserCircle />,
   },
   {
-    title: 'Quản lý kho',
+    title: 'Quản lý danh mục',
+    path: routes.CATEGORIES.path,
+    icon: <FaTags />,
+  },
+  {
+    title: 'Quản lý sản phẩm',
     path: routes.PRODUCTS.path,
     icon: <FaBox />,
   },
@@ -95,6 +111,32 @@ export const responseStatus = {
   NG: 'NG', // Failed
 };
 
+export const responseError = {
+  UNAUTHENTICATED: 'Unauthenticated.',
+};
+
 export const axiosClient = axios.create({
   baseURL: 'http://127.0.0.1:8000/api-admin'
 });
+
+export const imageListSeparator = ';';
+
+export const transactionStatus = {
+  ORDER_CANCELLED: 0,
+  ORDER_SUCCESS: 1,
+  ORDER_DELIVERY: 1,
+  ORDER_DELIVERED: 1,
+}
+export const transactionStatusLabel = {
+  0: 'Đã hủy hoặc trả lại',
+  1: 'Đặt hàng thành công',
+  2: 'Đang giao hàng',
+  3: 'Giao hàng thành công'
+}
+
+export const transactionStatusColor = {
+  0: 'red',
+  1: '#108ee9',
+  2: '#f50',
+  3: '#87d068'
+}

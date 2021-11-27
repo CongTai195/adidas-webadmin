@@ -8,6 +8,7 @@ import styles from './styles.module.css';
 const { Sider } = Layout;
 
 const AppSideBar = ({
+  user,
   collapsed,
   sideMenuItems,
   onClickMenuItem: onClickMenuItemProps,
@@ -31,17 +32,16 @@ const AppSideBar = ({
   return (
     <Sider collapsible collapsed={collapsed} trigger={null}>
       <div className={styles.logoContainer}>
-        <Avatar size={collapsed ? 36 : 128} src="https://picsum.photos/200" />
-        {!collapsed && <Typography.Title level={4} className={styles.username}>Ngô Đức Minh Trí</Typography.Title>}
+        <Avatar size={collapsed ? 36 : 128} src={user.avatar || "https://picsum.photos/200"} />
+        {!collapsed && <Typography.Title level={4} className={styles.username}>{user.name}</Typography.Title>}
       </div>
 
       <Menu
         theme="dark"
+        mode="inline"
         defaultSelectedKeys={[location.pathname]}
         selectedKeys={[location.pathname]}
-        mode="inline"
       >
-
         {sideMenuItems.map(renderMenuItem)}
       </Menu>
     </Sider>
@@ -50,6 +50,7 @@ const AppSideBar = ({
 
 AppSideBar.propTypes = {
   collapsed: PropTypes.bool.isRequired,
+  user: PropTypes.instanceOf(Object).isRequired,
   sideMenuItems: PropTypes.instanceOf(Array).isRequired,
 }
 

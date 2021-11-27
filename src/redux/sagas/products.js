@@ -1,9 +1,10 @@
 import { Modal } from 'antd';
 import { push } from 'connected-react-router';
-import { put, select, takeLeading } from 'redux-saga/effects';
+import { put, call, fork, select, takeLeading, takeLatest } from 'redux-saga/effects';
 
 import * as ActionTypes from '../actionTypes';
-import { axiosClient, responseStatus, routes } from '../../constants';
+import { apiErrorHandler } from '../../utils';
+import { axiosClient, imageListSeparator, responseStatus, routes } from '../../constants';
 
 function* getProducts() {
   let errorMessage = '';
@@ -23,7 +24,46 @@ function* getProducts() {
 
   yield put({ type: ActionTypes.GET_PRODUCTS_FAILED });
 
-  alert(errorMessage);
+  yield call(apiErrorHandler, errorMessage);
+}
+
+function* onProductSuccess({ successAction, productId, sizes }) {
+  // Show success modal
+  const showModal = function* () {
+    let modal;
+    yield new Promise((resolve) => {
+      modal = Modal.success({
+        title: 'Thành công',
+        content: successAction === ActionTypes.ADD_PRODUCT_SUCCESS ? 'Thêm sản phẩm thành công' : 'Cập nhật sản phẩm thành công',
+        onOk: resolve,
+      })
+    });
+
+    modal.destroy();
+
+    yield put(push(routes.PRODUCTS.path))
+  };
+
+  yield fork(showModal);
+
+  // Hide loading
+  yield fork(put, { type: successAction });
+
+  // Add product sizes
+  for (const sizeItem of sizes) {
+    try {
+      yield axiosClient.post('/detail-product', {
+        product_id: productId,
+        quantity: sizeItem.quantity,
+        size: sizeItem.size
+      });
+    } catch (error) {
+
+    }
+  }
+
+  // Reload product list
+  yield put({ type: ActionTypes.GET_PRODUCTS });
 }
 
 function* addProductAction(action) {
@@ -35,7 +75,7 @@ function* addProductAction(action) {
     const formData = new FormData();
 
     formData.append('name', payload.name);
-    formData.append('category_id', '2');
+    formData.append('category_id', `${payload.category}`);
     formData.append('price', payload.price);
     formData.append('description', payload.description);
     formData.append('specifications', payload.specifications);
@@ -51,22 +91,11 @@ function* addProductAction(action) {
     const { data } = yield axiosClient.post('/product', formData);
 
     if (data.status === responseStatus.OK) {
-      yield put({ type: ActionTypes.ADD_PRODUCT_SUCCESS });
-
-      yield put({ type: ActionTypes.GET_PRODUCTS });
-
-      let modal;
-      yield new Promise((resolve) => {
-        modal = Modal.success({
-          title: 'Thành công',
-          content: 'Cập nhật sản phẩm thành công',
-          onOk: resolve,
-        })
+      yield call(onProductSuccess, {
+        successAction: ActionTypes.ADD_PRODUCT_SUCCESS,
+        productId: data.results.id,
+        sizes: payload.sizes
       });
-
-      modal.destroy();
-
-      yield put(push(routes.PRODUCTS.path))
       return;
     }
 
@@ -77,7 +106,7 @@ function* addProductAction(action) {
 
   yield put({ type: ActionTypes.ADD_PRODUCT_FAILED });
 
-  alert(errorMessage);
+  yield call(apiErrorHandler, errorMessage);
 }
 
 function* updateProductAction(action) {
@@ -90,26 +119,39 @@ function* updateProductAction(action) {
     const formData = new FormData();
 
     formData.append('name', payload.name);
-    formData.append('category_id', selectedProduct.category_id);
+    formData.append('category_id', payload.category_id);
     formData.append('price', payload.price);
     formData.append('description', payload.description);
     formData.append('specifications', payload.specifications);
-    formData.append('image_list', payload.image);
+    formData.set('image_list_string', '');
+
+    for (const image of payload.image) {
+      if (image.originFileObj) {
+        formData.append('image', image.originFileObj);
+      }
+    }
+
+    const oldImageList = [];
+    for (const item of payload.imageList) {
+      if (item.originUrl) {
+        oldImageList.push(item.originUrl);
+      } else {
+        formData.append('image_list[]', item.originFileObj);
+      }
+    }
+
+    if (oldImageList.length) {
+      formData.set('image_list_string', oldImageList.join(imageListSeparator))
+    }
 
     const { data } = yield axiosClient.post(`/product/${selectedProduct.id}`, formData);
 
     if (data.status === responseStatus.OK) {
-      yield put({ type: ActionTypes.UPDATE_PRODUCT_SUCCESS });
-
-      yield put({ type: ActionTypes.GET_PRODUCTS });
-
-      yield new Promise((resolve) => Modal.success({
-        title: 'Thành công',
-        content: 'Cập nhật sản phẩm thành công',
-        onOk: resolve,
-      }));
-
-      yield put(push(routes.PRODUCTS.path))
+      yield call(onProductSuccess, {
+        successAction: ActionTypes.UPDATE_PRODUCT_SUCCESS,
+        productId: selectedProduct.id,
+        sizes: payload.sizes
+      });
       return;
     }
 
@@ -120,7 +162,7 @@ function* updateProductAction(action) {
 
   yield put({ type: ActionTypes.UPDATE_PRODUCT_FAILED });
 
-  alert(errorMessage);
+  yield call(apiErrorHandler, errorMessage);
 }
 
 function* deleteProductAction(action) {
@@ -147,17 +189,33 @@ function* deleteProductAction(action) {
 
   yield put({ type: ActionTypes.DELETE_PRODUCT_FAILED });
 
-  alert(errorMessage);
+  yield call(apiErrorHandler, errorMessage);
 }
 
 function* selectProductAction() {
   yield put(push(routes.PRODUCT_DETAIL.path));
 }
 
-export default function* appSaga() {
+function* suggestSearchProductAction(action) {
+  try {
+    const { data } = yield axiosClient.get(`/product/search-products?name=${action.payload}`);
+
+    if (data.status === responseStatus.OK) {
+      yield put({ type: ActionTypes.SUGGEST_SEARCH_PRODUCT_SUCCESS, payload: data.results });
+      return;
+    }
+  } catch (error) {
+
+  }
+
+  yield put({ type: ActionTypes.SUGGEST_SEARCH_PRODUCT_FAILED });
+}
+
+export default function* productsSaga() {
   yield takeLeading(ActionTypes.GET_PRODUCTS, getProducts);
   yield takeLeading(ActionTypes.ADD_PRODUCT, addProductAction);
   yield takeLeading(ActionTypes.UPDATE_PRODUCT, updateProductAction);
   yield takeLeading(ActionTypes.DELETE_PRODUCT, deleteProductAction);
   yield takeLeading(ActionTypes.SELECT_PRODUCT, selectProductAction);
+  yield takeLatest(ActionTypes.SUGGEST_SEARCH_PRODUCT, suggestSearchProductAction);
 }

@@ -12,15 +12,16 @@
   width: 100px;
 }
 
-.submitButton {
-  width: 128px;
-  display: flex;
-  margin-top: 24px;
-  align-self: center;
-  align-items: center;
-  flex-direction: column;
-}
-
 .customerDetailCard {
   margin-bottom: 24px;
+}
+.fieldContainer {
+  display: flex;
+  margin-bottom: 16px;
+}
+.fieldLabel {
+  width: 200px;
+}
+.submitContainer {
+  padding: 20px 0px 0px 200px;
 }

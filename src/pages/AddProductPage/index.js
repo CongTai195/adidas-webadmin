@@ -2,35 +2,33 @@ import React from 'react';
 import {
   Card,
   Form,
-  Modal,
-  // Table,
   Input,
   Button,
   Upload,
+  TreeSelect,
   InputNumber,
 } from 'antd';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-import { PlusOutlined } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
-// import { FaTrashAlt } from 'react-icons/fa';
-
+import { PlusOutlined, MinusCircleOutlined } from '@ant-design/icons';
 
 import AppInput from '../../components/AppInput';
-// import EditableCell from '../../components/EditableCell';
 
 import styles from './styles.module.css';
-import { formatCurrency, readFile } from '../../utils';
 import * as ActionTypes from '../../redux/actionTypes';
+import { formatCurrency, readFile } from '../../utils';
 
 dayjs.extend(utc)
 
-const maxProductImage = 1;
+export const maxProductImage = 1;
 
-const maxProductImageList = 5;
+export const maxProductImageList = 5;
 
 const AddProductPage = () => {
   const dispatch = useDispatch();
+
+  const categories = useSelector((state) => state.categories.categoryList);
 
   const addLoading = useSelector((state) => state.products.addLoading);
 
@@ -39,82 +37,13 @@ const AddProductPage = () => {
     imageList: [],
   });
 
-  const onClickRemoveSize = React.useCallback((item) => () => {
-    Modal.confirm({
-      maskClosable: true,
-      okButtonProps: { danger: true },
-      title: `Are you sure want to delete product #${item.Id}?`,
-      onOk: () => {
-        setState((prevState) => {
-          const products = JSON.parse(JSON.stringify(prevState.product.products));
-
-          const itemIndex = products.findIndex((x) => x.Id === item.Id);
-
-          products.splice(itemIndex, 1);
-
-          return {
-            ...prevState,
-            products,
-          }
-        });
-      }
-    });
-  }, []);
-
-  const onClickUpdateSize = React.useCallback((item) => () => {
-  }, []);
-
-  const productDetailColumns = [
-    {
-      title: 'Id',
-      dataIndex: 'id',
-    },
-    {
-      title: 'Kích cỡ',
-      dataIndex: 'size',
-    },
-    {
-      title: 'Số lượng',
-      dataIndex: 'quantity',
-      editable: true,
-    },
-    {
-      title: 'Ngày tạo',
-      dataIndex: 'created_at',
-      render: (text) => dayjs.utc(text || undefined).format('HH:mm DD/MM/YYYY')
-    },
-    {
-      title: 'Chức năng',
-      key: 'functions',
-      render: (text, item) => (
-        <div>
-          <Button type="primary" className={styles.buttonSeparator} onClick={onClickUpdateSize(item)}>Cập nhật</Button>
-          <Button type="primary" danger onClick={onClickRemoveSize(item)}>Xóa</Button>
-        </div>
-      )
-    },
-  ];
-
-  const mergedColumns = productDetailColumns.map((col) => {
-    if (!col.editable) return col;
-
-    return {
-      ...col,
-      onCell: (record) => ({
-        record,
-        editable: true,
-        inputType: col.inputType || 'text',
-        dataIndex: col.dataIndex,
-        title: col.title,
-      }),
-    };
-  });
-
   const onFinish = React.useCallback((values) => {
     dispatch({ type: ActionTypes.ADD_PRODUCT, payload: values });
   }, [dispatch]);
 
   const renderFormItem = React.useCallback((item) => {
+    if (item.formItem) return item.formItem;
+
     const sharedProps = {
       key: item.name,
       name: item.name,
@@ -169,6 +98,30 @@ const AddProductPage = () => {
     return e.fileList;
   }, []);
 
+  const renderCategoryItem = React.useCallback((item) => {
+    let childrens = [];
+
+    if (item.subs) {
+      childrens = Object.values(item.subs).map((item) => (
+        <TreeSelect.TreeNode
+          key={item.id}
+          value={item.id}
+          title={item.name}
+        />
+      ));
+    }
+
+    return (
+      <TreeSelect.TreeNode
+        key={item.id}
+        value={item.id}
+        title={item.name}
+      >
+        {childrens}
+      </TreeSelect.TreeNode>
+    );
+  }, []);
+
   const formItems = React.useMemo(() => [
     {
       name: 'name',
@@ -186,12 +139,79 @@ const AddProductPage = () => {
         <InputNumber
           disabled={addLoading}
           className={styles.priceInput}
-          parser={value => {
-            // const valueWithoutCurrency = value.replace(' VNĐ', '');
-            // const valueWithoutSeparator = valueWithoutCurrency.replace(/,/g, '').trim();
-            return value.replace(/\D/g, '').trim();
-          }}
-          formatter={(value) => formatCurrency(`${value} VNĐ`)} />
+          parser={(value) => value.replace(/\D/g, '').trim()}
+          formatter={(value) => formatCurrency(`${value} VNĐ`)}
+        />
+      )
+    },
+    {
+      formItem: (
+        <Form.List key="sizes" name="sizes">
+          {(fields, { add, remove }, { errors }) => (
+            <>
+              {fields.map((field, index) => (
+                <Form.Item
+                  key={field.key}
+                  label={index === 0 ? 'Sizes' : ' '}
+                >
+                  <Form.Item
+                    name={[index, 'size']}
+                    rules={[
+                      {
+                        required: true,
+                        message: "Vui lòng điền size.",
+                      },
+                    ]}
+                    noStyle
+                  >
+                    <InputNumber placeholder="Size" style={{ width: '45%', marginRight: '2.5%' }} />
+                  </Form.Item>
+                  <Form.Item
+                    name={[index, 'quantity']}
+                    rules={[
+                      {
+                        required: true,
+                        message: "Vui lòng điền số lượng",
+                      },
+                    ]}
+                    noStyle
+                  >
+                    <InputNumber placeholder="Số lượng" style={{ width: '45%', marginRight: '2.5%' }} />
+                  </Form.Item>
+
+                  <MinusCircleOutlined
+                    className="dynamic-delete-button"
+                    style={{ marginTop: 8 }}
+                    onClick={() => remove(field.name)}
+                  />
+                </Form.Item>
+              ))}
+              <Form.Item label={fields.length ? ' ' : 'Sizes'}>
+                <Button
+                  type="dashed"
+                  onClick={() => add()}
+                  icon={<PlusOutlined />}
+                >
+                  Thêm size
+                </Button>
+                <Form.ErrorList errors={errors} />
+              </Form.Item>
+            </>
+          )}
+        </Form.List>
+      )
+    },
+    {
+      name: 'category',
+      label: 'Danh mục',
+      rules: [{ required: true, message: 'Vui lòng chọn danh mục cho sản phẩm!' }],
+      component: (
+        <TreeSelect
+          treeDefaultExpandAll
+          placeholder="Chọn danh mục"
+        >
+          {categories.map(renderCategoryItem)}
+        </TreeSelect>
       )
     },
     {
@@ -199,7 +219,7 @@ const AddProductPage = () => {
       valuePropName: 'fileList',
       label: 'Hình ảnh đại diện',
       getValueFromEvent: onUploadChange,
-      rules: [{ min: 1, type: 'array', message: 'Vui lòng chọn hình ảnh!' }],
+      rules: [{ required: true, min: 1, type: 'array', message: 'Vui lòng chọn hình ảnh!' }],
       component: (
         <Upload
           accept="image/*"
@@ -226,7 +246,7 @@ const AddProductPage = () => {
       valuePropName: 'fileList',
       label: 'Hình ảnh chi tiết',
       getValueFromEvent: onUploadImageListChange,
-      rules: [{ min: 1, type: 'array', message: 'Vui lòng chọn hình ảnh!' }],
+      rules: [{ required: true, min: 1, type: 'array', message: 'Vui lòng chọn hình ảnh!' }],
       component: (
         <Upload
           accept="image/*"
@@ -281,9 +301,11 @@ const AddProductPage = () => {
       )
     },
   ], [
+    renderCategoryItem,
     onBeforeUpload,
     onUploadChange,
     onUploadImageListChange,
+    categories,
     addLoading,
     state.image,
     state.imageList.length,
@@ -299,6 +321,8 @@ const AddProductPage = () => {
           initialValues={{
             name: '',
             price: 0,
+            sizes: [],
+            category: null,
             image: [],
             imageList: [],
             specifications: '',
@@ -310,29 +334,6 @@ const AddProductPage = () => {
           {formItems.map(renderFormItem)}
         </Form>
       </Card>
-
-      {/* <Card title="Size của sản phẩm:" className={styles.tableContainer}>
-        <Form
-          name="size-table-form"
-          onFinish={onSizeTableFormFinish}
-          // onFinishFailed={onFinishFailed}
-          autoComplete="off"
-          initialValues={state.selectedProduct.detail_products}
-        >
-          <Table
-            rowKey="Id"
-            columns={mergedColumns}
-            components={{
-              body: {
-                cell: EditableCell,
-              },
-            }}
-            tableLayout="fixed"
-            dataSource={state.selectedProduct.detail_products}
-            pagination={{ pageSize: 5 }}
-          />
-        </Form>
-      </Card> */}
     </div>
   );
 }

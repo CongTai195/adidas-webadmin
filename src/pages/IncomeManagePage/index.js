@@ -1,146 +1,163 @@
-import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { push } from 'connected-react-router';
-import { Table, Button, Input, Modal, Image } from 'antd';
-import { Line } from '@ant-design/charts';
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Card, Table, Button, DatePicker } from "antd";
+import { Line } from "@ant-design/charts";
 
-import styles from './styles.module.css';
-import { routes } from '../../constants';
-import * as ActionTypes from '../../redux/actionTypes';
-
-// export const products = Array.from({ length: 10 }).fill().map((_, index) => {
-//   const productNumber = index + 1;
-//   return {
-//     Id: `${productNumber}`,
-//     Name: `Product #${productNumber}`,
-//     Image: `Product #${productNumber} image`,
-//     Product_Sold: 50,
-//   };
-// });
-
-export const income = Array.from({ length: 10 }).fill().map((_, index) => {
-    const transaction_id = index + 1;
-    return {
-      Transaction_Id: `${transaction_id}`,
-      Date: '20:32 15/11/2021',
-      Amount: 500,
-    };
-  });
+import styles from "./styles.module.css";
+import * as ActionTypes from "../../redux/actionTypes";
+import { formatCurrency } from "../../utils";
 
 const InComeManagePage = () => {
   const dispatch = useDispatch();
 
-  const loading = useSelector((state) => state.products.loading);
+  const budget = useSelector((state) => state.budget.budgetList);
 
-  const products = useSelector((state) => state.products.productList);
+  const yearbudget = useSelector((state) => state.budget.yearBudgetList);
 
   const [state, setState] = React.useState({
-    // products,
-    income
+    viewType: 'month',
+    yearSelected: new Date().getFullYear()
   });
 
+  const selectYear = React.useCallback((date, dateString) => {
+    setState((prevState) => ({
+      ...prevState,
+      yearSelected: dateString
+    }))
+    dispatch({
+      type: ActionTypes.GET_YEARBUDGET,
+      payload: {
+        viewType: state.viewType,
+        dateString
+      }
+    });
+  }, [dispatch, state.viewType]);
 
-  const onSearch = React.useCallback((text) => {
-
-  }, []);
+  const onClickChange = React.useCallback((viewType) => () => {
+    setState((prevState) => ({
+      ...prevState,
+      viewType
+    }))
+    dispatch({
+      type: ActionTypes.GET_YEARBUDGET,
+      payload: {
+        viewType,
+        dateString: state.yearSelected
+      }
+    });
+  }, [dispatch, state.yearSelected]);
 
   const columns2 = [
     {
-      title: 'Transaction_Id',
-      dataIndex: 'Transaction_Id',
-      key: 'Transaction_Id',
+      title: state.viewType === 'month' ? 'Tháng' : "Năm",
+      dataIndex: state.viewType,
     },
     {
-      title: 'Date',
-      dataIndex: 'Date',
-      key: 'Date',
+      title: "Doanh thu",
+      dataIndex: "price",
+      render: (text) => formatCurrency(`${text} VNĐ`),
     },
-    {
-      title: 'Amount',
-      dataIndex: 'Amount',
-      key: 'Amount',
-    },
-
   ];
 
   const columns = [
     {
-      title: 'Id',
-      dataIndex: 'id',
-      key: 'id',
+      title: "No.",
+      dataIndex: "product_id",
+      render: (_, item, index) => index + 1,
     },
     {
-      title: 'Name',
-      dataIndex: 'name',
-      key: 'name',
+      title: "Tên sản phẩm",
+      dataIndex: "name",
     },
     {
-      title: 'Hình ảnh',
-      dataIndex: 'image',
-      key: 'image',
-      render: (imageSource) => <Image src={imageSource} width={100} />
+      title: "Doanh số",
+      dataIndex: "quantity",
     },
     {
-        title: 'Số Lượng',
-        dataIndex: ['detail_products', 'quantity'],
-        // key: 'quantity',
-      },
-
-  ];
-
-  const data = [
-    { year: '1991', value: 3 },
-    { year: '1992', value: 4 },
-    { year: '1993', value: 3.5 },
-    { year: '1994', value: 5 },
-    { year: '1995', value: 4.9 },
-    { year: '1996', value: 6 },
-    { year: '1997', value: 7 },
-    { year: '1998', value: 9 },
-    { year: '1999', value: 13 },
+      title: "Doanh thu",
+      dataIndex: "price",
+      render: (text) => formatCurrency(`${text} VNĐ`),
+    },
   ];
 
   const config = {
-    data,
-    xField: 'year',
-    yField: 'value',
+    data: yearbudget,
+    xField: state.viewType,
+    yField: "price",
     point: {
       size: 5,
-      shape: 'diamond',
+      shape: "diamond",
     },
+    xAxis: { title: { text: state.viewType === 'month' ? "Tháng" : 'Năm' } },
+    yAxis: { title: { text: "Doanh thu" } },
   };
-  //return <Line {...config} />;
 
   React.useEffect(() => {
-    dispatch({ type: ActionTypes.GET_PRODUCTS });
+    const now = new Date()
+    dispatch({ type: ActionTypes.GET_BUDGET });
+    dispatch({
+      type: ActionTypes.GET_YEARBUDGET,
+      payload: {
+        dateString: now.getFullYear(),
+        viewType: 'month'
+      }
+    });
   }, [dispatch]);
 
   return (
     <div className={styles.container}>
-      <div className={styles.searchContainer}>
-        <Input.Search
-          enterButton
-          placeholder="Tìm kiếm sản phẩm"
-          onSearch={onSearch}
+      <Card
+        title="Danh mục các sản phẩm bán chạy"
+        className={(styles.customerDetailCard, styles.cardSeparator)}
+        bodyStyle={{ padding: 0 }}
+      >
+        <Table
+          rowKey="product_id"
+          columns={columns}
+          dataSource={budget}
+          pagination={{ pageSize: 4 }}
         />
-      </div>
-
-      <Table
-        rowKey="Id"
-        columns={columns}
-        dataSource={products}
-        pagination={{ pageSize: 4 }}
-      />
-
-     <Table
-        rowKey="Id"
-        columns={columns2}
-        dataSource={state.income}
-        pagination={{ pageSize: 4 }}
-      />
-      <Line {...config} />;
+      </Card>
+      {
+        <Card
+          title="Bảng doanh thu theo năm"
+          className={(styles.customerDetailCard, styles.cardSeparator)}
+          bodyStyle={{ padding: 0 }}
+        >
+          <Table
+            rowKey={(record) => `${+record.price}_${Date.now()}`}
+            columns={columns2}
+            dataSource={yearbudget}
+            pagination={{ pageSize: 4 }}
+          />
+        </Card>
+      }
+      <Card
+        title="Biểu đồ doanh thu theo năm"
+        className={styles.customerDetailCard}
+        extra={
+          <div>
+            <DatePicker onChange={selectYear} picker="year" />
+            <Button
+              type={state.viewType === 'month' ? "primary" : 'ghost'}
+              className={styles.buttonSeparator}
+              onClick={onClickChange("month")}
+            >
+              Tháng
+            </Button>
+            <Button
+              type={state.viewType === 'year' ? "primary" : 'ghost'}
+              className={styles.buttonSeparator}
+              onClick={onClickChange("year")}
+            >
+              Năm
+            </Button>
+          </div>
+        }
+      >
+        <Line {...config} />
+      </Card>
     </div>
-    
   );
-}
+};
 export default InComeManagePage;

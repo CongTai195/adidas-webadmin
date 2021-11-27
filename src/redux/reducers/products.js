@@ -4,8 +4,11 @@ const defaultState = {
   loading: true,
   productList: [],
   addLoading: false,
+  searchSuggests: [],
   deleteLoading: false,
   selectedProduct: null,
+  isSearched: false,
+  searchResults: [],
 };
 
 export default function productReducer(state = defaultState, action) {
@@ -61,11 +64,40 @@ export default function productReducer(state = defaultState, action) {
         ...state,
         addLoading: true,
       }
-    case ActionTypes.ADD_PRODUCT_SUCCESS: 
+    case ActionTypes.ADD_PRODUCT_SUCCESS:
     case ActionTypes.ADD_PRODUCT_FAILED:
       return {
         ...state,
         addLoading: false,
+      }
+    // case ActionTypes.SUGGEST_SEARCH_PRODUCT:
+    case ActionTypes.SUGGEST_SEARCH_PRODUCT_SUCCESS: {
+      return {
+        ...state,
+        searchSuggests: action.payload,
+      }
+    }
+    case ActionTypes.SUGGEST_SEARCH_PRODUCT_FAILED:
+      return {
+        ...state,
+        searchSuggests: [],
+      }
+    case ActionTypes.SUBMIT_PRODUCT_SUGGEST: {
+      const updateStates = {
+        isSearched: true,
+        searchResults: state.productList.filter((x) => x.name.includes(action.payload)),
+      };
+
+      return {
+        ...state,
+        ...updateStates,
+      }
+    }
+    case ActionTypes.CLEAR_PRODUCT_SUGGEST:
+      return {
+        ...state,
+        isSearched: false,
+        searchResults: [],
       }
     case ActionTypes.LOGOUT_DONE:
       return defaultState;

@@ -1,18 +1,24 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import React from 'react';
-import { Card, Table } from 'antd';
-import { useSelector } from 'react-redux';
 import { Redirect } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { Card, Tag, Table, Select, Button } from 'antd';
 
 import styles from './styles.module.css';
-import { routes } from '../../constants';
 import { formatCurrency } from '../../utils';
+import * as ActionTypes from '../../redux/actionTypes';
+import { routes, transactionStatusColor, transactionStatusLabel } from '../../constants';
 
 const OrderDetailPage = () => {
   const selectedTransaction = useSelector((state) => state.transactions.selectedTransaction);
 
-  if(!selectedTransaction) {
+  if (!selectedTransaction) {
     return <Redirect to={routes.ORDERS.path} />;
   }
+
+  const dispatch = useDispatch();
+
+  const updateLoading = useSelector((state) => state.transactions.updateLoading);
 
   const columns = [
     {
@@ -42,17 +48,89 @@ const OrderDetailPage = () => {
     },
   ];
 
+  const [state, setState] = React.useState({
+    status: selectedTransaction.status,
+  });
+
+  const onChangeSelect = React.useCallback((value) => {
+    setState((prevState) => ({ ...prevState, status: value }));
+  }, []);
+
+  const onSubmit = React.useCallback(() => {
+    const canUpdate = state.status !== selectedTransaction.status;
+
+    if (!canUpdate) return;
+
+    dispatch({
+      type: ActionTypes.UPDATE_TRANSACTION,
+      payload: {
+        id: selectedTransaction.id,
+        status: state.status,
+      },
+    });
+  }, [
+    dispatch,
+    state.status,
+    selectedTransaction.id,
+    selectedTransaction.status,
+  ]);
+
   return (
     <div className={styles.container}>
       <Card title="Chi tiết đơn hàng" className={styles.customerDetailCard}>
-        <p>Mã đơn hàng: #{selectedTransaction.id}</p>
-        <p>Tên khách hàng: {selectedTransaction.user_name}</p>
-        <p>Địa chỉ: {selectedTransaction.user_address}</p>
-        <p>Số điện thoại: {selectedTransaction.user_phone}</p>
-        <p>Email: {selectedTransaction.user_email}</p>
-        <p>Tổng tiền: {formatCurrency(`${selectedTransaction.amount} VNĐ`)}</p>
-        <p>Phương thức thanh toán: {selectedTransaction.payment}</p>
-        <p>Giao hàng: {selectedTransaction.shipping}</p>
+        <div className={styles.fieldContainer}>
+          <div className={styles.fieldLabel}><span>Mã đơn hàng:</span></div>
+          <span>#{selectedTransaction.id}</span>
+        </div>
+        <div className={styles.fieldContainer}>
+          <div className={styles.fieldLabel}><span>Trạng thái:</span></div>
+          <Select value={state.status} disabled={updateLoading} onChange={onChangeSelect}>
+            {Object.keys(transactionStatusColor).map((key) => (
+              <Select.Option value={+key}>
+                <Tag color={transactionStatusColor[key]}>{transactionStatusLabel[key]}</Tag>
+              </Select.Option>
+            ))}
+          </Select>
+        </div>
+        <div className={styles.fieldContainer}>
+          <div className={styles.fieldLabel}><span>Tên khách hàng:</span></div>
+          <span>{selectedTransaction.user_name}</span>
+        </div>
+        <div className={styles.fieldContainer}>
+          <div className={styles.fieldLabel}><span>Địa chỉ:</span></div>
+          <span>{selectedTransaction.user_address}</span>
+        </div>
+        <div className={styles.fieldContainer}>
+          <div className={styles.fieldLabel}><span>Số điện thoại:</span></div>
+          <span>{selectedTransaction.user_phone}</span>
+        </div>
+        <div className={styles.fieldContainer}>
+          <div className={styles.fieldLabel}><span>Email:</span></div>
+          <span>{selectedTransaction.user_email}</span>
+        </div>
+        <div className={styles.fieldContainer}>
+          <div className={styles.fieldLabel}><span>Tổng tiền:</span></div>
+          <span>{formatCurrency(`${selectedTransaction.amount} VNĐ`)}</span>
+        </div>
+        <div className={styles.fieldContainer}>
+          <div className={styles.fieldLabel}><span>Phương thức thanh toán:</span></div>
+          <span>{selectedTransaction.payment}</span>
+        </div>
+        <div className={styles.fieldContainer}>
+          <div className={styles.fieldLabel}><span>Giao hàng:</span></div>
+          <span>{selectedTransaction.shipping}</span>
+        </div>
+
+        <div className={styles.submitContainer}>
+          <Button
+            type="primary"
+            disabled={updateLoading}
+            loading={updateLoading}
+            onClick={onSubmit}
+          >
+            Cập nhật
+          </Button>
+        </div>
       </Card>
 
       <Table
@@ -81,7 +159,7 @@ const OrderDetailPage = () => {
       >
         Cập nhật
       </Button> */}
-    </div>
+    </div >
   );
 }
 
