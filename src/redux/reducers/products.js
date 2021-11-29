@@ -70,7 +70,20 @@ export default function productReducer(state = defaultState, action) {
         ...state,
         addLoading: false,
       }
-    // case ActionTypes.SUGGEST_SEARCH_PRODUCT:
+    case ActionTypes.SUGGEST_SEARCH_PRODUCT: {
+      const updateStates = {};
+      
+      if (!action.payload) {
+        updateStates.isSearched = false;
+        updateStates.searchResults = [];
+        updateStates.searchSuggests = [];
+      }
+
+      return {
+        ...state,
+        ...updateStates,
+      }
+    }
     case ActionTypes.SUGGEST_SEARCH_PRODUCT_SUCCESS: {
       return {
         ...state,

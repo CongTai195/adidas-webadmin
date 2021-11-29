@@ -296,7 +296,7 @@ const AddProductPage = () => {
           loading={addLoading}
           disabled={addLoading}
         >
-          Cập nhật
+          Thêm
         </Button>
       )
     },

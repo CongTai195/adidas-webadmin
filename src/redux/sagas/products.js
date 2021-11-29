@@ -47,7 +47,7 @@ function* onProductSuccess({ successAction, productId, sizes }) {
   yield fork(showModal);
 
   // Hide loading
-  yield fork(put, { type: successAction });
+  yield put({ type: successAction });
 
   // Add product sizes
   for (const sizeItem of sizes) {
@@ -169,7 +169,8 @@ function* deleteProductAction(action) {
   let errorMessage = '';
 
   try {
-    const { id } = action.payload;
+    const { payload, route } = action;
+    const { id } = payload;
 
     const { data } = yield axiosClient.delete('/product', {
       data: {
@@ -179,6 +180,10 @@ function* deleteProductAction(action) {
 
     if (data.status === responseStatus.OK) {
       yield put({ type: ActionTypes.DELETE_PRODUCT_SUCCESS, payload: action.payload });
+
+      if (typeof route === 'string') {
+        yield put(push(route));
+      }
       return;
     }
 
@@ -197,6 +202,8 @@ function* selectProductAction() {
 }
 
 function* suggestSearchProductAction(action) {
+  if (!action.payload) return;
+
   try {
     const { data } = yield axiosClient.get(`/product/search-products?name=${action.payload}`);
 

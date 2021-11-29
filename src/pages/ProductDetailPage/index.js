@@ -38,6 +38,8 @@ const ProductDetailPage = () => {
 
   const categories = useSelector((state) => state.categories.categoryList);
 
+  const deleteLoading = useSelector((state) => state.products.deleteLoading);
+
   const [state, setState] = React.useState(() => {
     const clonedSelectedProduct = JSON.parse(JSON.stringify(selectedProduct));
 
@@ -52,6 +54,8 @@ const ProductDetailPage = () => {
       image: getFormatImageSource(clonedSelectedProduct.image),
     };
   });
+
+  const modalRef = React.useRef();
 
   const onFinish = React.useCallback(async (values) => {
     dispatch({ type: ActionTypes.UPDATE_PRODUCT, payload: values });
@@ -322,15 +326,39 @@ const ProductDetailPage = () => {
   ]);
 
   const onClickRemoveProduct = React.useCallback(() => {
-    Modal.confirm({
-      maskClosable: true,
+    const modal = Modal.confirm({
+      maskClosable: false,
       okButtonProps: { danger: true },
-      title: `Are you sure want to delete product ${state.selectedProduct.name}?`,
-      onOk: () => {
-
-      }
+      title: `Bạn có chắc chắn muốn xóa sản phẩm ${state.selectedProduct.name}?`,
+      okText: 'Xác nhận',
+      cancelText: 'Hủy bỏ',
+      onOk: () => dispatch({
+        type: ActionTypes.DELETE_PRODUCT,
+        payload: state.selectedProduct,
+        route: routes.PRODUCTS.path,
+      })
     });
-  }, [state.selectedProduct.name]);
+
+    modalRef.current = modal;
+  }, [dispatch, state.selectedProduct]);
+
+  React.useEffect(() => {
+    if (!modalRef.current) return;
+
+    if (deleteLoading) {
+      modalRef.current.update({
+        okButtonProps: {
+          loading: deleteLoading,
+          disabled: deleteLoading,
+        },
+        cancelButtonProps: {
+          disabled: deleteLoading
+        }
+      });
+    } else {
+      modalRef.current.destroy();
+    }
+  }, [deleteLoading]);
 
   return (
     <div className={styles.container}>
