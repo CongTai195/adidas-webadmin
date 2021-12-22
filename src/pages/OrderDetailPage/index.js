@@ -28,7 +28,7 @@ const OrderDetailPage = () => {
     },
     {
       title: 'Tên sản phẩm',
-      dataIndex: ['product', 'name'],
+      dataIndex: 'name',
     },
     {
       width: 100,

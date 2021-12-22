@@ -11,7 +11,7 @@ function* getCategories() {
     const { data } = yield axiosClient.get('/category');
 
     if (data.status === responseStatus.OK) {
-      yield delay(500)
+      yield delay(100)
       yield put({ type: ActionTypes.GET_CATEGORIES_SUCCESS, payload: data.results });
       return;
     }
