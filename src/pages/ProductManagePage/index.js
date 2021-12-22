@@ -17,16 +17,12 @@ const ProductManagePage = () => {
   const dispatch = useDispatch();
 
   const loading = useSelector((state) => state.products.loading);
-
   const products = useSelector((state) => state.products.productList)
-
-  const deleteLoading = useSelector((state) => state.products.deleteLoading);
-
-  const searchSuggests = useSelector((state) => state.products.searchSuggests);
-
   const isSearched = useSelector((state) => state.products.isSearched);
-
+  const searchText = useSelector((state) => state.products.searchText);
   const searchResults = useSelector((state) => state.products.searchResults);
+  const deleteLoading = useSelector((state) => state.products.deleteLoading);
+  const searchSuggests = useSelector((state) => state.products.searchSuggests);
 
   const modalRef = React.useRef();
 
@@ -126,10 +122,6 @@ const ProductManagePage = () => {
     dispatch({ type: ActionTypes.SUGGEST_SEARCH_PRODUCT, payload: text });
   }, [dispatch]);
 
-  const onClear = React.useCallback(() => {
-    dispatch({ type: ActionTypes.CLEAR_PRODUCT_SUGGEST, payload: '' });
-  }, [dispatch]);
-
   const cardExtra = React.useMemo(() => (
     <div className={styles.cardExtra}>
       <Button
@@ -143,20 +135,20 @@ const ProductManagePage = () => {
 
       <AutoComplete
         allowClear
+        defaultValue={searchText}
         options={searchSuggests.map((x) => ({ label: x.name, value: x.name }))}
         className={styles.searchInput}
         onSelect={onSelect}
         onSearch={onSearch}
-        onClear={onClear}
         placeholder="Tìm kiếm sản phẩm..."
       />
     </div>
   ), [
-    onClear,
+    searchText,
+    searchSuggests,
     onSearch,
     onSelect,
     onClickAddProduct,
-    searchSuggests,
   ]);
 
   return (

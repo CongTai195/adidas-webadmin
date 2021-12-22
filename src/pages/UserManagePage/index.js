@@ -8,9 +8,11 @@ import {
   // Input,
 } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
+import { push } from 'connected-react-router';
 
 import styles from './styles.module.css';
 import * as ActionTypes from '../../redux/actionTypes';
+import { routes } from '../../constants';
 
 dayjs.extend(utc)
 
@@ -24,6 +26,13 @@ const UserManagePage = () => {
   const blockLoading = useSelector((state) => state.users.blockLoading);
 
   const modalRef = React.useRef();
+
+  const onClickview = React.useCallback((item) => () => {
+    // dispatch(push(routes.PRODUCT_DETAIL(item.Id).path));
+    dispatch(push(routes.ORDERS(item.id).path));
+    // /ORDERS/id
+  }, [dispatch]);
+
 
   const onClickBlock = React.useCallback((item) => () => {
     const isBlocked = !!item.deleted_at;
@@ -82,7 +91,7 @@ const UserManagePage = () => {
       render: (text) => dayjs.utc(text || undefined).format('HH:mm DD/MM/YYYY')
     },
     {
-      width: 120,
+      width: 250,
       title: 'Chức năng',
       dataIndex: 'functions',
       key: 'functions',
@@ -90,17 +99,21 @@ const UserManagePage = () => {
         const isBlocked = !!item.deleted_at;
         const blockColor = isBlocked ? 'green' : undefined;
         return (
-          <Button
-            type="primary"
-            danger={!isBlocked}
-            style={{
-              borderColor: blockColor,
-              backgroundColor: blockColor,
-            }}
-            onClick={onClickBlock(item)}
-          >
-            {isBlocked ? 'Mở khóa' : 'Khóa'}
-          </Button>
+          <div>
+            <Button
+              type="primary"
+              danger={!isBlocked}
+              style={{
+                borderColor: blockColor,
+                backgroundColor: blockColor,
+              }}
+              onClick={onClickBlock(item)}
+            >
+              {isBlocked ? 'Mở khóa' : 'Khóa'}
+            </Button>
+            <Button type="primary" className={styles.buttonSeparator} onClick={onClickview(item)}>Xem đơn hàng</Button>
+
+          </div>
         )
       }
     },

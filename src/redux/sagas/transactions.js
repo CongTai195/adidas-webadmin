@@ -6,11 +6,19 @@ import * as ActionTypes from '../actionTypes';
 import { apiErrorHandler } from '../../utils';
 import { axiosClient, responseStatus, routes } from '../../constants';
 
-function* getTransactions() {
+function* getTransactions(action) {
   let errorMessage = '';
 
   try {
-    const { data } = yield axiosClient.get('/transaction');
+    const { payload } = action
+
+    let url = '/transaction'
+
+    if (!isNaN(+payload)) {
+      url = `/transaction/${payload}`
+    }
+
+    const { data } = yield axiosClient.get(url);
 
     if (data.status === responseStatus.OK) {
       yield put({ type: ActionTypes.GET_TRANSACTIONS_SUCCESS, payload: data.results });

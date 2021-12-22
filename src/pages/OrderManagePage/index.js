@@ -8,6 +8,7 @@ import {
   // Input,
 } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
 
 import styles from './styles.module.css';
 import { formatCurrency } from '../../utils';
@@ -30,6 +31,8 @@ const OrderManagePage = () => {
   // const onSearch = React.useCallback((text) => {
 
   // }, []);
+
+  let { userId } = useParams();
 
   const columns = [
     {
@@ -91,8 +94,8 @@ const OrderManagePage = () => {
   ];
 
   React.useEffect(() => {
-    dispatch({ type: ActionTypes.GET_TRANSACTIONS });
-  }, [dispatch]);
+    dispatch({ type: ActionTypes.GET_TRANSACTIONS, payload: userId });
+  }, [dispatch, userId]);
 
   return (
     <div className={styles.container}>

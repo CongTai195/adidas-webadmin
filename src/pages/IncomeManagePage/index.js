@@ -120,7 +120,7 @@ const InComeManagePage = () => {
       </Card>
       {
         <Card
-          title="Bảng doanh thu theo năm"
+          title={state.viewType === 'month' ? 'Bảng doanh thu theo tháng' : "Bảng doanh thu theo năm"}
           className={(styles.customerDetailCard, styles.cardSeparator)}
           bodyStyle={{ padding: 0 }}
         >
@@ -133,7 +133,7 @@ const InComeManagePage = () => {
         </Card>
       }
       <Card
-        title="Biểu đồ doanh thu theo năm"
+        title={state.viewType === 'month' ? 'Biểu đồ doanh thu theo tháng' : "Biểu đồ doanh thu theo năm"}
         className={styles.customerDetailCard}
         extra={
           <div>

@@ -1,6 +1,7 @@
-import { put, select, takeLeading } from 'redux-saga/effects';
+import { put, call, select, takeLeading, delay } from 'redux-saga/effects';
 
 import * as ActionTypes from '../actionTypes';
+import { apiErrorHandler } from '../../utils';
 import { axiosClient, localStorageKey, responseStatus } from '../../constants';
 
 function* toggleSideBarAction() {
@@ -17,35 +18,14 @@ function* checkLoginAction() {
     return;
   }
 
-  try {
-    loginInfo = JSON.parse(loginInfo);
+  loginInfo = JSON.parse(loginInfo);
 
-    const formData = new FormData();
-
-    formData.append('email', loginInfo.email);
-    formData.append('password', loginInfo.password);
-
-    const { data } = yield axiosClient.post('/login', formData);
-
-    if (data.status === responseStatus.OK) {
-      axiosClient.defaults.headers.Authorization = `Bearer ${data.results.token}`;
-
-      yield put({
-        type: ActionTypes.CHECK_LOGIN_DONE,
-        payload: data.results.info
-      });
-      return;
-    }
-  } catch (error) {
-
-  }
-
-  yield put({ type: ActionTypes.CHECK_LOGIN_DONE });
-
-  localStorage.removeItem(localStorageKey.LOGIN_INFO);
+  yield call(loginAction, { payload: loginInfo });
 }
 
 function* loginAction(action) {
+  let errorMessage = 'Đăng nhập không thành công';
+
   try {
     const { payload } = action;
 
@@ -57,12 +37,15 @@ function* loginAction(action) {
     const { data } = yield axiosClient.post('/login', formData);
 
     if (data.status === responseStatus.OK) {
+      yield delay(500)
       axiosClient.defaults.headers.Authorization = `Bearer ${data.results.token}`;
 
       yield put({
         type: ActionTypes.LOGIN_SUCCESS,
         payload: data.results.info
       });
+
+      localStorage.setItem(localStorageKey.RECENTLY_EMAIL, payload.email);
 
       if (payload.remember) {
         const savedData = JSON.stringify({
@@ -75,10 +58,14 @@ function* loginAction(action) {
       return;
     }
   } catch (error) {
-
+    errorMessage = error.response?.data?.errors?.auth ?? error.message;
   }
 
   yield put({ type: ActionTypes.LOGIN_FAILED });
+
+  yield call(apiErrorHandler, errorMessage);
+
+  localStorage.removeItem(localStorageKey.LOGIN_INFO);
 }
 
 function* logoutAction() {

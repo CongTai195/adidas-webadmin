@@ -33,7 +33,10 @@ function* getYearBudgetAction(action) {
     const { data } = yield axiosClient.get(`/order/admin/budget-date?date=01-01-${payload.dateString}&group=${payload.viewType}`);
 
     if (data.status === responseStatus.OK) {
-      yield put({ type: ActionTypes.GET_YEARBUDGET_SUCCESS, payload: data.results });
+      const budgets = data.results
+        .sort((a, b) => a[payload.viewType] - b[payload.viewType])
+        .map((item) => ({ ...item, price: +item.price }))
+      yield put({ type: ActionTypes.GET_YEARBUDGET_SUCCESS, payload: budgets });
       return;
     }
 

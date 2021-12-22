@@ -63,7 +63,15 @@ function* onProductSuccess({ successAction, productId, sizes }) {
   }
 
   // Reload product list
-  yield put({ type: ActionTypes.GET_PRODUCTS });
+  yield call(getProducts);
+
+  const isSearched = yield select((state) => state.products.isSearched);
+
+  if (isSearched) {
+    const searchText = yield select((state) => state.products.searchText);
+
+    yield put({ type: ActionTypes.SUBMIT_PRODUCT_SUGGEST, payload: searchText });
+  }
 }
 
 function* addProductAction(action) {

@@ -28,6 +28,7 @@ export default function appReducer(state = defaultState, action) {
     case ActionTypes.LOGIN_FAILED:
       return {
         ...state,
+        loading: false,
         loginLoading: false,
       }
     case ActionTypes.TOGGLE_SIDEBAR:

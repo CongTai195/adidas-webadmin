@@ -13,7 +13,7 @@ const OrderDetailPage = () => {
   const selectedTransaction = useSelector((state) => state.transactions.selectedTransaction);
 
   if (!selectedTransaction) {
-    return <Redirect to={routes.ORDERS.path} />;
+    return <Redirect to={routes.ORDERS().path} />;
   }
 
   const dispatch = useDispatch();
@@ -43,7 +43,7 @@ const OrderDetailPage = () => {
     {
       width: 200,
       title: 'Giá',
-      dataIndex: ['product', 'price'],
+      dataIndex: 'price',
       render: (text) => formatCurrency(`${text} VNĐ`)
     },
   ];
@@ -86,7 +86,7 @@ const OrderDetailPage = () => {
           <div className={styles.fieldLabel}><span>Trạng thái:</span></div>
           <Select value={state.status} disabled={updateLoading} onChange={onChangeSelect}>
             {Object.keys(transactionStatusColor).map((key) => (
-              <Select.Option value={+key}>
+              <Select.Option key={key} value={+key}>
                 <Tag color={transactionStatusColor[key]}>{transactionStatusLabel[key]}</Tag>
               </Select.Option>
             ))}

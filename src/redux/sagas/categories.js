@@ -1,4 +1,4 @@
-import { call, put, all, takeLeading } from 'redux-saga/effects';
+import { call, put, all, takeLeading, delay } from 'redux-saga/effects';
 
 import * as ActionTypes from '../actionTypes';
 import { apiErrorHandler } from '../../utils';
@@ -11,6 +11,7 @@ function* getCategories() {
     const { data } = yield axiosClient.get('/category');
 
     if (data.status === responseStatus.OK) {
+      yield delay(500)
       yield put({ type: ActionTypes.GET_CATEGORIES_SUCCESS, payload: data.results });
       return;
     }
@@ -36,6 +37,7 @@ function* deleteCategory(action) {
     });
 
     if (data.status === responseStatus.OK) {
+      yield delay(3000)
       yield put({ type: ActionTypes.DELETE_CATEGORY_SUCCESS, payload });
       return;
     }
@@ -65,6 +67,8 @@ function* addCategory(action) {
     const { data } = yield axiosClient.post('/category', body);
 
     if (data.status === responseStatus.OK) {
+      yield delay(3000)
+
       yield all([
         put({ type: ActionTypes.ADD_CATEGORY_SUCCESS }),
         put({ type: ActionTypes.GET_CATEGORIES })
@@ -96,6 +100,7 @@ function* updateCategory(action) {
     const { data } = yield axiosClient.put(`/category/${payload.id}`, body);
 
     if (data.status === responseStatus.OK) {
+      yield delay(3000)
       yield all([
         put({ type: ActionTypes.UPDATE_CATEGORY_SUCCESS }),
         put({ type: ActionTypes.GET_CATEGORIES })

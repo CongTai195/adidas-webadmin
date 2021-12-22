@@ -27,13 +27,21 @@ export const routes = {
     path: '/users',
     component: UserManagePage
   },
-  ORDERS: {
-    path: '/orders',
-    exact: true,
-    component: OrderManagePage
+  ORDERS: (userId = '') => {
+    let path = `/orders`;
+
+    if (userId) {
+      path = `/orders/${userId}`
+    }
+
+    return {
+      path,
+      component: OrderManagePage,
+      defaultParam: '/:userId?'
+    }
   },
   ORDER_DETAIL: {
-    path: '/orders/detail',
+    path: '/order/detail',
     component: OrderDetailPage
   },
   CATEGORIES: {
@@ -86,7 +94,7 @@ export const sideMenuItems = [
   },
   {
     title: 'Quản lý đơn hàng',
-    path: routes.ORDERS.path,
+    path: routes.ORDERS().path,
     icon: <FaShoppingCart />,
   },
   {
@@ -104,6 +112,7 @@ export const sideMenuItems = [
 export const localStorageKey = {
   SIDEBAR_COLLAPSED: 'SIDEBAR_COLLAPSED',
   LOGIN_INFO: 'LOGIN_INFO',
+  RECENTLY_EMAIL: 'RECENTLY_EMAIL',
 };
 
 export const responseStatus = {

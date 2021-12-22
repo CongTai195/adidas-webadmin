@@ -9,6 +9,7 @@ const defaultState = {
   selectedProduct: null,
   isSearched: false,
   searchResults: [],
+  searchText: '',
 };
 
 export default function productReducer(state = defaultState, action) {
@@ -72,7 +73,7 @@ export default function productReducer(state = defaultState, action) {
       }
     case ActionTypes.SUGGEST_SEARCH_PRODUCT: {
       const updateStates = {};
-      
+
       if (!action.payload) {
         updateStates.isSearched = false;
         updateStates.searchResults = [];
@@ -98,6 +99,7 @@ export default function productReducer(state = defaultState, action) {
     case ActionTypes.SUBMIT_PRODUCT_SUGGEST: {
       const updateStates = {
         isSearched: true,
+        searchText: action.payload,
         searchResults: state.productList.filter((x) => x.name.includes(action.payload)),
       };
 
@@ -106,12 +108,6 @@ export default function productReducer(state = defaultState, action) {
         ...updateStates,
       }
     }
-    case ActionTypes.CLEAR_PRODUCT_SUGGEST:
-      return {
-        ...state,
-        isSearched: false,
-        searchResults: [],
-      }
     case ActionTypes.LOGOUT_DONE:
       return defaultState;
     default: return state;

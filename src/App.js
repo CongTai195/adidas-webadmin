@@ -58,6 +58,7 @@ const App = () => {
 
     if (typeof route === 'function') {
       route = route();
+      route.path = `${route.path}${route.defaultParam}`
     }
 
     const routeProps = {

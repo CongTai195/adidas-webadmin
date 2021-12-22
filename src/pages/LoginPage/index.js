@@ -3,9 +3,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Form, Input, Button, Checkbox } from 'antd';
 
 import styles from './styles.module.css';
+import { localStorageKey } from '../../constants';
 import * as ActionTypes from '../../redux/actionTypes';
 
 const LoginPage = () => {
+  const prevEmail = React.useRef(localStorage.getItem(localStorageKey.RECENTLY_EMAIL) || '');
+
   const loginLoading = useSelector((state) => state.app.loginLoading);
 
   const dispatch = useDispatch();
@@ -22,8 +25,8 @@ const LoginPage = () => {
         wrapperCol={{ span: 16 }}
         initialValues={{
           remember: true,
-          email: 'admin@gmail.com',
-          password: '123',
+          email: prevEmail.current,
+          password: '',
         }}
         onFinish={onFinish}
       >
